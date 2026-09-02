@@ -24,7 +24,7 @@ function getHandleSignal(
 ): SignalType | null {
   const node = nodes.find(n => n.id === nodeId)
   if (!node) return null
-  const data = node.data as ComponentNodeData
+  const data = node.data as unknown as ComponentNodeData
   if (!data?.componentDef) return null
   const pin = data.componentDef.pins.find(p => p.id === pinId)
   return pin ? pin.signal : null
@@ -53,7 +53,7 @@ function getI2CNodesOnBus(nodes: Node[], edges: Edge[]): Map<string, string[]> {
   const addressMap = new Map<string, string[]>()
   nodes.forEach(node => {
     if (!busNodeIds.has(node.id)) return
-    const data = node.data as ComponentNodeData
+    const data = node.data as unknown as ComponentNodeData
     if (!data?.componentDef?.i2cAddresses) return
     data.componentDef.i2cAddresses.forEach(addr => {
       const existing = addressMap.get(addr.hex) ?? []
@@ -86,8 +86,8 @@ function hasI2CComplete(nodeId: string, edges: Edge[], nodes: Node[]): boolean {
 function hasPullupResistors(nodes: Node[]): { sda: boolean; scl: boolean } {
   // A resistor node counts if its type is resistor_4k7 or resistor_10k
   const hasResistor = nodes.some(
-    n => (n.data as ComponentNodeData)?.typeId === 'resistor_4k7' ||
-         (n.data as ComponentNodeData)?.typeId === 'resistor_10k'
+    n => (n.data as unknown as ComponentNodeData)?.typeId === 'resistor_4k7' ||
+         (n.data as unknown as ComponentNodeData)?.typeId === 'resistor_10k'
   )
   // Simplified check — if ANY resistor is on the canvas, assume it's used for pull-up
   return { sda: hasResistor, scl: hasResistor }
@@ -132,7 +132,7 @@ export function runDRC(nodes: Node[], edges: Edge[]): DRCResult[] {
     const srcSignal = getHandleSignal(srcParsed.nodeId, srcParsed.pinId, nodes)
     const tgtSignal = getHandleSignal(tgtParsed.nodeId, tgtParsed.pinId, nodes)
     const tgtNode = nodes.find(n => n.id === edge.target)
-    const tgtData = tgtNode?.data as ComponentNodeData | undefined
+    const tgtData = tgtNode?.data as unknown as ComponentNodeData | undefined
 
     // Direct Power to GND Short (VUSB/5V or 3.3V to GND)
     if (
@@ -189,7 +189,7 @@ export function runDRC(nodes: Node[], edges: Edge[]): DRCResult[] {
   addressMap.forEach((nodeIds, hex) => {
     if (nodeIds.length > 1) {
       const labels = nodeIds.map(id => {
-        const data = nodes.find(n => n.id === id)?.data as ComponentNodeData
+        const data = nodes.find(n => n.id === id)?.data as unknown as ComponentNodeData
         return data?.componentDef?.shortLabel ?? id
       })
 
@@ -226,7 +226,7 @@ export function runDRC(nodes: Node[], edges: Edge[]): DRCResult[] {
 
   // ── Rule 4: I2C devices connected but no pull-up resistors ────────────────
   const hasI2CDevices = nodes.some(n => {
-    const data = n.data as ComponentNodeData
+    const data = n.data as unknown as ComponentNodeData
     return data?.componentDef?.i2cAddresses?.length > 0
   })
   const hasI2CEdges = edges.some(e => {
@@ -251,7 +251,7 @@ export function runDRC(nodes: Node[], edges: Edge[]): DRCResult[] {
   }
 
   // ── Check D5: Passive Overload (Too many pull-ups on I2C bus)
-  const passiveNodes = nodes.filter(n => (n.data as unknown as ComponentNodeData)?.componentDef?.category === 'Passive')
+  const passiveNodes = nodes.filter(n => (n.data as unknown as unknown as ComponentNodeData)?.componentDef?.category === 'Passive')
   if (passiveNodes.length > 5) { 
     results.push({
       id: `drc_passive_overload_${ruleIdx++}`,
@@ -266,7 +266,7 @@ export function runDRC(nodes: Node[], edges: Edge[]): DRCResult[] {
 
   // ── Rule 5: I2C device with SDA connected but no SCL (or vice versa) ───────
   nodes.forEach(node => {
-    const data = node.data as ComponentNodeData
+    const data = node.data as unknown as ComponentNodeData
     if (!data?.componentDef?.i2cAddresses?.length) return
     if (data.componentDef.i2cAddresses.length === 0) return
 
@@ -290,7 +290,7 @@ export function runDRC(nodes: Node[], edges: Edge[]): DRCResult[] {
 
   // ── Rule 6: I2C bus has no MCU ─────────────────────────────────────────────
   const mcuNodes = nodes.filter(n => {
-    const data = n.data as ComponentNodeData
+    const data = n.data as unknown as ComponentNodeData
     return data?.componentDef?.category === 'MCU'
   })
   const sdaEdgeNodeIds = new Set<string>()
@@ -304,7 +304,7 @@ export function runDRC(nodes: Node[], edges: Edge[]): DRCResult[] {
   })
 
   const sensorNodesOnBus = nodes.filter(n => {
-    const data = n.data as ComponentNodeData
+    const data = n.data as unknown as ComponentNodeData
     return (
       data?.componentDef?.i2cAddresses?.length > 0 &&
       sdaEdgeNodeIds.has(n.id)
@@ -371,13 +371,13 @@ export function runDRC(nodes: Node[], edges: Edge[]): DRCResult[] {
   })
 
   // ── Rule 8: ENS160 ADDR warning when LTR-390 present ──────────────────────
-  const hasENS160 = nodes.some(n => (n.data as ComponentNodeData)?.typeId === 'ens160_aht21')
-  const hasLTR390 = nodes.some(n => (n.data as ComponentNodeData)?.typeId === 'ltr390')
+  const hasENS160 = nodes.some(n => (n.data as unknown as ComponentNodeData)?.typeId === 'ens160_aht21')
+  const hasLTR390 = nodes.some(n => (n.data as unknown as ComponentNodeData)?.typeId === 'ltr390')
   if (hasENS160 && hasLTR390) {
     // Check if ENS160 ADDR is floating/unconnected (defaults to 0x53)
-    const ens160Nodes = nodes.filter(n => (n.data as ComponentNodeData)?.typeId === 'ens160_aht21')
+    const ens160Nodes = nodes.filter(n => (n.data as unknown as ComponentNodeData)?.typeId === 'ens160_aht21')
     ens160Nodes.forEach(ens => {
-      const addrPin = ens.data as ComponentNodeData
+      const addrPin = ens.data as unknown as ComponentNodeData
       const addrConnected = edges.some(e => {
         if (e.source !== ens.id && e.target !== ens.id) return false
         const h = e.source === ens.id ? e.sourceHandle : e.targetHandle
@@ -390,7 +390,7 @@ export function runDRC(nodes: Node[], edges: Edge[]): DRCResult[] {
           severity: 'warning',
           message: '⚠️ ENS160 ADDR pin unconnected — may conflict with LTR-390 @ 0x53',
           detail: `Both ENS160 (ADDR=float/HIGH → 0x53) and LTR-390 (fixed 0x53) share the same I2C address. The ${addrPin.componentDef?.shortLabel} ADDR pin must be pulled LOW to use address 0x52.`,
-          affectedNodeIds: [ens.id, ...nodes.filter(n => (n.data as ComponentNodeData)?.typeId === 'ltr390').map(n => n.id)],
+          affectedNodeIds: [ens.id, ...nodes.filter(n => (n.data as unknown as ComponentNodeData)?.typeId === 'ltr390').map(n => n.id)],
           affectedEdgeIds: [],
           suggestion: 'Pull ENS160 ADDR pin to GND (use 10kΩ resistor) to select I2C address 0x52',
         })
@@ -413,7 +413,7 @@ export function runDRC(nodes: Node[], edges: Edge[]): DRCResult[] {
 
   // ── Rule 10: Passive Overload (I2C Pull-up) ────────────────────────────────
   const pullupNodes = nodes.filter(n => {
-    const data = n.data as ComponentNodeData | PassiveNodeData
+    const data = n.data as unknown as ComponentNodeData | PassiveNodeData
     return data?.typeId === 'resistor_4k7' || data?.typeId === 'resistor_10k'
   })
   
@@ -448,7 +448,7 @@ export function buildI2CBusReport(nodes: Node[], edges: Edge[]): I2CBusEntry[] {
 
   // Also include all I2C components even if not wired yet
   nodes.forEach(node => {
-    const data = node.data as ComponentNodeData
+    const data = node.data as unknown as ComponentNodeData
     if (!data?.componentDef?.i2cAddresses?.length) return
     data.componentDef.i2cAddresses.forEach(addr => {
       const conflictNodeIds = addressMap.get(addr.hex) ?? []

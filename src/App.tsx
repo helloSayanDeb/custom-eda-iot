@@ -49,7 +49,7 @@ function getHandleSignalFromNodes(handleId: string | null | undefined, nodeId: s
   const pinId = handleId.split('__')[1]?.replace('_bi', '').replace('_s', '').replace('_t', '') ?? ''
   const node = nodes.find(n => n.id === nodeId)
   if (!node) return null
-  const data = node.data as ComponentNodeData
+  const data = node.data as unknown as ComponentNodeData
   const pin = data?.componentDef?.pins?.find(p => p.id === pinId)
   return pin?.signal ?? null
 }
@@ -86,7 +86,7 @@ function AppInner() {
         .filter(r => r.severity === 'warning' && r.affectedNodeIds.includes(node.id))
         .map(r => r.message)
 
-      const data = node.data as ComponentNodeData
+      const data = node.data as unknown as ComponentNodeData
       if (
         JSON.stringify(data.drcErrors) === JSON.stringify(nodeErrors) &&
         JSON.stringify(data.drcWarnings) === JSON.stringify(nodeWarnings)
@@ -221,7 +221,7 @@ function AppInner() {
 
   // ── MCU on bus check ──────────────────────────────────────────────────────
   const mcuConnected = nodes.some(n => {
-    const data = n.data as ComponentNodeData
+    const data = n.data as unknown as ComponentNodeData
     return data?.componentDef?.category === 'MCU'
   })
 
@@ -300,7 +300,7 @@ function AppInner() {
             <MiniMap
               position="bottom-right"
               nodeColor={n => {
-                const data = n.data as ComponentNodeData
+                const data = n.data as unknown as ComponentNodeData
                 return data?.componentDef?.color ?? '#6366f1'
               }}
               maskColor="rgba(2,6,23,0.8)"

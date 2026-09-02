@@ -6,7 +6,7 @@ function getComponentsOnCanvas(nodes: Node[]): BOMEntry[] {
   const counts = new Map<string, number>()
 
   nodes.forEach(n => {
-    const data = n.data as ComponentNodeData
+    const data = n.data as unknown as ComponentNodeData
     if (!data.typeId) return
     counts.set(data.typeId, (counts.get(data.typeId) ?? 0) + 1)
   })
@@ -115,8 +115,8 @@ export function generateNetlist(nodes: Node[], edges: Edge[]): string {
     const tgtNode = nodes.find(n => n.id === edge.target)
     if (!srcNode || !tgtNode) return
 
-    const srcData = srcNode.data as ComponentNodeData
-    const tgtData = tgtNode.data as ComponentNodeData
+    const srcData = srcNode.data as unknown as ComponentNodeData
+    const tgtData = tgtNode.data as unknown as ComponentNodeData
 
     const srcLabel = srcData.instanceId ?? srcNode.id
     const tgtLabel = tgtData.instanceId ?? tgtNode.id

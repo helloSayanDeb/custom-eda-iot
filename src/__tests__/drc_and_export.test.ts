@@ -1022,7 +1022,7 @@ describe('Block C — Hardware Data Layer Integrity (Datasheet Compliance)', () 
         data: {
           ...makeNode('gen3', 'tmp117').data,
           componentDef: {
-            ...(makeNode('gen3', 'tmp117').data as ComponentNodeData).componentDef,
+            ...(makeNode('gen3', 'tmp117').data as unknown as ComponentNodeData).componentDef,
             i2cAddresses: [{ hex: '0x53' }]
           }
         }

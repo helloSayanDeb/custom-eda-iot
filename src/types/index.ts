@@ -103,3 +103,14 @@ export interface DRCResult {
 // ─────────────────────────────────────────────
 //  End of Types
 // ─────────────────────────────────────────────
+
+export interface BOMEntry {
+  reference: string
+  value: string
+  description: string
+  package: string
+  quantity: number
+  supplier: string
+  partNumber: string
+  notes: string
+}

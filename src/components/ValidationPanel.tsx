@@ -11,7 +11,7 @@ export function ValidationPanel({ results, onHighlightNodes }: ValidationPanelPr
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [filter, setFilter] = useState<'all' | 'error' | 'warning' | 'info'>('all')
 
-  const errors   = results.filter(r => r.severity === 'error')
+  const errors   = results.filter(r => r.severity === 'error' || r.severity === 'CRITICAL_ERROR')
   const warnings = results.filter(r => r.severity === 'warning')
   const infos    = results.filter(r => r.severity === 'info')
 
@@ -23,12 +23,14 @@ export function ValidationPanel({ results, onHighlightNodes }: ValidationPanelPr
 
   const severityIcon = {
     error:   <AlertCircle size={12} className="text-red-400 flex-shrink-0" />,
+    CRITICAL_ERROR: <AlertCircle size={12} className="text-red-600 font-bold flex-shrink-0" />,
     warning: <AlertTriangle size={12} className="text-amber-400 flex-shrink-0" />,
     info:    <Info size={12} className="text-blue-400 flex-shrink-0" />,
   }
 
   const severityColor = {
     error:   { bg: 'rgba(239,68,68,0.08)', border: 'rgba(239,68,68,0.2)', text: '#f87171' },
+    CRITICAL_ERROR: { bg: 'rgba(220,38,38,0.15)', border: 'rgba(220,38,38,0.4)', text: '#ef4444' },
     warning: { bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.2)', text: '#fbbf24' },
     info:    { bg: 'rgba(59,130,246,0.08)', border: 'rgba(59,130,246,0.2)', text: '#60a5fa' },
   }

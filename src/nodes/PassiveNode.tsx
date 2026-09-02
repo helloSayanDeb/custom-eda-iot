@@ -4,7 +4,7 @@ import type { PassiveNodeData } from '../types'
 import { SIGNAL_COLORS } from '../data/components'
 
 export const PassiveNode = memo(function PassiveNode({ data, id, selected }: NodeProps) {
-  const nodeData = data as PassiveNodeData
+  const nodeData = data as unknown as PassiveNodeData
   const isResistor = nodeData.typeId?.startsWith('resistor')
   const isCap      = nodeData.typeId?.startsWith('cap')
 

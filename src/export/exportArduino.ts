@@ -6,7 +6,7 @@ import { runDRC } from '../validation/drc'
 function getComponentsOnCanvas(nodes: Node[]) {
   return nodes
     .map(n => {
-      const data = n.data as ComponentNodeData
+      const data = n.data as unknown as ComponentNodeData
       return COMPONENT_LIBRARY.find(c => c.typeId === data.typeId)
     })
     .filter(Boolean)

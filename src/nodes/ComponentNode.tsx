@@ -89,7 +89,7 @@ function PinHandle({ pin, nodeId, side }: PinHandleProps) {
 
 // ─── Component Node ────────────────────────────────────────────────────────────
 export const ComponentNode = memo(function ComponentNode({ data, id, selected }: NodeProps) {
-  const nodeData = data as ComponentNodeData
+  const nodeData = data as unknown as ComponentNodeData
   const { componentDef } = nodeData
 
   const hasErrors   = nodeData.drcErrors?.length > 0

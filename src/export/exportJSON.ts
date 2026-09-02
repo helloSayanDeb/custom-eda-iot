@@ -12,10 +12,10 @@ export function exportJSON(nodes: Node[], edges: Edge[], projectName = 'IoT Sche
       type: n.type,
       position: n.position,
       data: {
-        typeId: (n.data as ComponentNodeData).typeId,
-        label: (n.data as ComponentNodeData).label,
-        instanceId: (n.data as ComponentNodeData).instanceId,
-        selectedI2CAddress: (n.data as ComponentNodeData).selectedI2CAddress,
+        typeId: (n.data as unknown as ComponentNodeData).typeId,
+        label: (n.data as unknown as ComponentNodeData).label,
+        instanceId: (n.data as unknown as ComponentNodeData).instanceId,
+        selectedI2CAddress: (n.data as unknown as ComponentNodeData).selectedI2CAddress,
       },
     })),
     edges: edges.map(e => ({
