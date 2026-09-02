@@ -1,4 +1,3 @@
-import { loadPyodide } from 'pyodide';
 import {
   BOARD_MOCK, BUSIO_MOCK, DIGITALIO_MOCK, ANALOGIO_MOCK,
   SUPERVISOR_MOCK, MICROCONTROLLER_MOCK, TIME_MOCK,
@@ -35,12 +34,12 @@ i2cBus.registerDevice(new MockLTR390(0x53));
 
 self.onmessage = async (event) => {
   const { type, code, data } = event.data;
-
   if (type === 'INIT') {
     try {
-      pyodide = await loadPyodide({
-        indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.1/full/'
-      });
+      // Use dynamic import with @vite-ignore to prevent Vite from breaking it in production
+      // @ts-ignore: TypeScript doesn't know about CDN imports
+      const pyodideModule = await import(/* @vite-ignore */ 'https://cdn.jsdelivr.net/pyodide/v0.26.1/full/pyodide.mjs');
+      pyodide = await pyodideModule.loadPyodide();
 
       // ── Expose JS bridge functions to Python ──────────────────
       (self as any).simI2CWrite = (address: number, data: Uint8Array) => {
