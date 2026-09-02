@@ -1,13 +1,9 @@
 import { useState } from 'react'
 import type { Node, Edge } from '@xyflow/react'
 import {
-  Download, FileJson, Code2, Table2, Network,
   ZoomIn, ZoomOut, Maximize2, Trash2,
-  ChevronDown, Layers, Cpu,
+  Layers, Cpu, Code2, Network
 } from 'lucide-react'
-import { downloadJSON } from '../export/exportJSON'
-import { downloadArduinoSketch } from '../export/exportArduino'
-import { downloadBOM, downloadNetlist } from '../export/exportBOM'
 
 interface ToolbarProps {
   nodes: Node[]
@@ -28,15 +24,6 @@ export function Toolbar({
   nodeCount, edgeCount, errorCount, warningCount,
   isSimMode, onToggleSimMode
 }: ToolbarProps) {
-  const [exportOpen, setExportOpen] = useState(false)
-
-  const handleExport = (type: 'json' | 'arduino' | 'bom' | 'netlist') => {
-    setExportOpen(false)
-    if (type === 'json')    downloadJSON(nodes, edges)
-    if (type === 'arduino') downloadArduinoSketch(nodes, edges)
-    if (type === 'bom')     downloadBOM(nodes, edges)
-    if (type === 'netlist') downloadNetlist(nodes, edges)
-  }
 
   return (
     <header
@@ -123,74 +110,6 @@ export function Toolbar({
         <Trash2 size={12} />
         <span className="hidden sm:inline">Clear</span>
       </button>
-
-      {/* Export dropdown */}
-      <div className="relative">
-        <button
-          onClick={() => setExportOpen(!exportOpen)}
-          className="btn-primary"
-          id="export-btn"
-        >
-          <Download size={12} />
-          Export
-          <ChevronDown
-            size={10}
-            style={{ transform: exportOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}
-          />
-        </button>
-
-        {exportOpen && (
-          <>
-            {/* Backdrop */}
-            <div
-              className="fixed inset-0 z-40"
-              onClick={() => setExportOpen(false)}
-            />
-
-            {/* Dropdown */}
-            <div
-              className="absolute right-0 top-full mt-2 w-56 rounded-xl overflow-hidden z-50"
-              style={{
-                background: 'rgba(15,23,42,0.98)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                boxShadow: '0 16px 48px rgba(0,0,0,0.6)',
-                backdropFilter: 'blur(12px)',
-              }}
-            >
-              <div className="p-1.5 space-y-0.5">
-                <ExportItem
-                  icon={<FileJson size={13} className="text-indigo-400" />}
-                  label="Schematic JSON"
-                  desc="Full project data"
-                  onClick={() => handleExport('json')}
-                  id="export-json"
-                />
-                <ExportItem
-                  icon={<Code2 size={13} className="text-green-400" />}
-                  label="Arduino Sketch (.ino)"
-                  desc="Wire.h setup + sensor code"
-                  onClick={() => handleExport('arduino')}
-                  id="export-arduino"
-                />
-                <ExportItem
-                  icon={<Table2 size={13} className="text-amber-400" />}
-                  label="Bill of Materials (CSV)"
-                  desc="Component list + suppliers"
-                  onClick={() => handleExport('bom')}
-                  id="export-bom"
-                />
-                <ExportItem
-                  icon={<Network size={13} className="text-blue-400" />}
-                  label="Netlist (CSV)"
-                  desc="EasyEDA-compatible"
-                  onClick={() => handleExport('netlist')}
-                  id="export-netlist"
-                />
-              </div>
-            </div>
-          </>
-        )}
-      </div>
     </header>
   )
 }
@@ -210,28 +129,4 @@ function StatBadge({
   )
 }
 
-function ExportItem({
-  icon, label, desc, onClick, id,
-}: {
-  icon: React.ReactNode
-  label: string
-  desc: string
-  onClick: () => void
-  id: string
-}) {
-  return (
-    <button
-      id={id}
-      onClick={onClick}
-      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/8 transition-colors text-left group"
-    >
-      <div className="flex-shrink-0">{icon}</div>
-      <div>
-        <div className="text-[10px] font-medium text-white/80 group-hover:text-white/100 transition-colors">
-          {label}
-        </div>
-        <div className="text-[8px] text-white/35">{desc}</div>
-      </div>
-    </button>
-  )
-}
+
