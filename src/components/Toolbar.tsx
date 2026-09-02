@@ -18,12 +18,15 @@ interface ToolbarProps {
   edgeCount: number
   errorCount: number
   warningCount: number
+  isSimMode?: boolean
+  onToggleSimMode?: () => void
 }
 
 export function Toolbar({
   nodes, edges,
   onClearCanvas, onFitView,
   nodeCount, edgeCount, errorCount, warningCount,
+  isSimMode, onToggleSimMode
 }: ToolbarProps) {
   const [exportOpen, setExportOpen] = useState(false)
 
@@ -98,6 +101,18 @@ export function Toolbar({
       </div>
 
       <div className="h-6 w-px bg-white/10" />
+
+      {/* Simulation Toggle */}
+      {onToggleSimMode && (
+        <button
+          onClick={onToggleSimMode}
+          className={`btn-secondary ${isSimMode ? 'bg-blue-500/20 text-blue-400 border-blue-500/50' : 'text-white/70'}`}
+          title="Toggle Simulation Mode"
+        >
+          <Code2 size={12} />
+          <span className="hidden sm:inline">{isSimMode ? 'Exit Sim Mode' : 'Simulate'}</span>
+        </button>
+      )}
 
       {/* Clear canvas */}
       <button

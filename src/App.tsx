@@ -24,6 +24,9 @@ import { ValidationPanel } from './components/ValidationPanel'
 import { Toolbar } from './components/Toolbar'
 import { AddressMonitor } from './components/AddressMonitor'
 import { ConfirmDialog } from './components/ConfirmDialog'
+import { SimulationPanel } from './components/SimulationPanel'
+import { SensorControlPanel } from './components/SensorControlPanel'
+import { SimulationManager } from './simulation/SimulationManager'
 
 import { COMPONENT_LIBRARY, SIGNAL_COLORS, COMPATIBLE_SIGNALS } from './data/components'
 import { runDRC, buildI2CBusReport } from './validation/drc'
@@ -64,6 +67,33 @@ function AppInner() {
   const [isDragOver, setIsDragOver] = useState(false)
   const [rightTab, setRightTab] = useState<'drc' | 'i2c'>('drc')
   const [showClearConfirm, setShowClearConfirm] = useState(false)
+  const [isSimMode, setIsSimMode] = useState(false)
+  const [simManager, setSimManager] = useState<SimulationManager | null>(null)
+  const [simRunning, setSimRunning] = useState(false)
+  const [terminalOutput, setTerminalOutput] = useState("")
+
+  // Initialize Pyodide manager when entering sim mode
+  useEffect(() => {
+    if (isSimMode && !simManager) {
+      const manager = new SimulationManager((msg) => {
+        if (msg.type === 'STDOUT' || msg.type === 'STDERR') {
+          setTerminalOutput(prev => prev + msg.text)
+        } else if (msg.type === 'DONE' || msg.type === 'ERROR') {
+          setSimRunning(false)
+          if (msg.type === 'ERROR') {
+            setTerminalOutput(prev => prev + '\n[ERROR] ' + msg.error + '\n')
+          } else {
+            setTerminalOutput(prev => prev + '\n[PROCESS EXITED]\n')
+          }
+        }
+      })
+      setSimManager(manager)
+    }
+    return () => {
+      // Don't kill it immediately on toggle, keep it alive if possible,
+      // or kill it if unmounting entirely.
+    }
+  }, [isSimMode])
 
   // ── DRC results ─────────────────────────────────────────────────────────────
   const [drcResults, setDrcResults] = useState(() => runDRC([], []))
@@ -252,12 +282,21 @@ function AppInner() {
         edgeCount={edges.length}
         errorCount={errorCount}
         warningCount={warningCount}
+        isSimMode={isSimMode}
+        onToggleSimMode={() => setIsSimMode(!isSimMode)}
       />
 
       {/* Main area */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Left sidebar — component palette */}
-        <Sidebar onDragStart={onDragStart} />
+      <div className="flex flex-1 overflow-hidden relative">
+        {/* Left sidebar — component palette or sensor panel */}
+        {isSimMode ? (
+          <SensorControlPanel 
+            nodes={nodes as any} 
+            onSensorDataChange={(addr, data) => simManager?.updateSensor(addr, data)} 
+          />
+        ) : (
+          <Sidebar onDragStart={onDragStart} />
+        )}
 
         {/* Canvas */}
         <div
@@ -341,15 +380,15 @@ function AppInner() {
           </ReactFlow>
         </div>
 
-        {/* Right panel — Validation + I2C Monitor */}
-        <div
-          className="flex flex-col h-full"
-          style={{
-            width: 300,
-            background: 'rgba(9,14,28,0.97)',
-            borderLeft: '1px solid rgba(255,255,255,0.07)',
-          }}
-        >
+          {/* Right sidebar */}
+          <div
+            className="h-full border-l border-white/5 transition-all duration-300 flex flex-col"
+            style={{
+              width: 300,
+              background: 'rgba(9,14,28,0.97)',
+              boxShadow: '-4px 0 24px rgba(0,0,0,0.4)',
+            }}
+          >
           {/* Tab bar */}
           <div
             className="flex border-b border-white/5 flex-shrink-0"
@@ -386,6 +425,27 @@ function AppInner() {
             )}
           </div>
         </div>
+        
+        {isSimMode && (
+          <SimulationPanel 
+            simManager={simManager}
+            isRunning={simRunning}
+            terminalOutput={terminalOutput}
+            onRun={(code) => {
+              setTerminalOutput("");
+              setSimRunning(true);
+              simManager?.runCode(code);
+            }}
+            onStop={() => {
+              simManager?.terminate();
+              setSimManager(null); // Force recreation
+              setSimRunning(false);
+              setTerminalOutput(prev => prev + "\n[INTERRUPTED BY USER]\n");
+              setIsSimMode(false); 
+              setTimeout(() => setIsSimMode(true), 10); // Quick restart hack
+            }}
+          />
+        )}
       </div>
     </div>
   )

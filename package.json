@@ -12,8 +12,10 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@monaco-editor/react": "^4.7.0",
     "@xyflow/react": "^12.3.6",
     "lucide-react": "^0.447.0",
+    "pyodide": "^314.0.6",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
