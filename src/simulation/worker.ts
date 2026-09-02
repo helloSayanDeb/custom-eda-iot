@@ -83,6 +83,7 @@ self.onmessage = async (event) => {
       FS.writeFile('/lib/time.py', TIME_MOCK);
       FS.writeFile('/lib/micropython.py', MICROPYTHON_MOCK);
       FS.writeFile('/lib/circuitpython_typing.py', CIRCUITPYTHON_TYPING_MOCK);
+      FS.writeFile('/lib/typing_extensions.py', 'from typing import *\n');
 
       // adafruit_ble package (mock — BLE can't run in browser)
       FS.mkdir('/lib/adafruit_ble');
