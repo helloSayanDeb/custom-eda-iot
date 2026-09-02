@@ -24,9 +24,9 @@ export class MockMPU6050 extends MockDevice {
       this.registers[reg + 1] = raw & 0xFF;
     };
 
-    if (data.accelX !== undefined) write16(0x3B, data.accelX * ACCEL_SCALE);
-    if (data.accelY !== undefined) write16(0x3D, data.accelY * ACCEL_SCALE);
-    if (data.accelZ !== undefined) write16(0x3F, data.accelZ * ACCEL_SCALE);
+    if (data.accelX !== undefined) write16(0x3B, (data.accelX / 9.80665) * ACCEL_SCALE);
+    if (data.accelY !== undefined) write16(0x3D, (data.accelY / 9.80665) * ACCEL_SCALE);
+    if (data.accelZ !== undefined) write16(0x3F, (data.accelZ / 9.80665) * ACCEL_SCALE);
     
     if (data.gyroX !== undefined) write16(0x43, data.gyroX * GYRO_SCALE);
     if (data.gyroY !== undefined) write16(0x45, data.gyroY * GYRO_SCALE);

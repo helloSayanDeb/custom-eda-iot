@@ -119,7 +119,14 @@ if '/lib' not in sys.path:
   } else if (type === 'RUN') {
     try {
       if (!pyodide) throw new Error("Pyodide not loaded");
-      await pyodide.runPythonAsync(code);
+      
+      // Auto-convert synchronous time.sleep to await asyncio.sleep
+      // This is CRITICAL: it forces the Python execution to yield to the JS event loop,
+      // allowing the WebWorker to receive 'UPDATE_MOCK' messages from the UI sliders!
+      let asyncCode = code.replace(/time\.sleep\((.*?)\)/g, 'await asyncio.sleep($1)');
+      asyncCode = `import asyncio\n` + asyncCode;
+
+      await pyodide.runPythonAsync(asyncCode);
       self.postMessage({ type: 'DONE' });
     } catch (err: any) {
       if (err.message && err.message.includes('SystemExit')) {
