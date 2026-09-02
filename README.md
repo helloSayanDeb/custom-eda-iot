@@ -25,23 +25,23 @@ The simulation environment connects the React frontend to a Pyodide worker, inje
 
 ```mermaid
 graph TB
-    subgraph Browser UI
+    subgraph BrowserUI ["Browser UI"]
         Canvas["React Flow Schematic"]
         Sliders["Sensor Data Sliders<br/>(HR, SpO2, Temp, Accel)"]
         Editor["CircuitPython IDE<br/>(Monaco Editor)"]
         Terminal["Live Output Terminal"]
     end
 
-    subgraph Web Worker
+    subgraph WebWorker ["Web Worker"]
         Pyodide["Pyodide Environment<br/>(WebAssembly CPython)"]
         
-        subgraph Python Mocks
+        subgraph PythonMocks ["Python Mocks"]
             board["board.py"]
             busio["busio.py"]
             drivers["adafruit_* drivers"]
         end
 
-        subgraph JavaScript I2C Mocks
+        subgraph JSMocks ["JavaScript I2C Mocks"]
             MAX["MockMAX30102 (0x57)"]
             MPU["MockMPU6050 (0x68)"]
             TMP["MockTMP117 (0x48)"]
@@ -53,7 +53,7 @@ graph TB
         I2CBus["MockI2CBus"]
     end
 
-    Sliders -->|"Update registers"| JavaScript I2C Mocks
+    Sliders -->|"Update registers"| JSMocks
     Editor -->|"Execute Script"| Pyodide
     Pyodide -->|"import busio"| busio
     busio -->|"simI2CRead / simI2CWrite"| I2CBus
