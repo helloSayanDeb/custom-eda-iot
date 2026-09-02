@@ -239,6 +239,11 @@ def viper(f):
 
 // ── circuitpython_typing (optional typing stubs) ────────────────
 export const CIRCUITPYTHON_TYPING_MOCK = `
+import sys
+class _device_drivers:
+    class I2CDeviceDriver: pass
+sys.modules['circuitpython_typing.device_drivers'] = _device_drivers
+
 ReadableBuffer = bytes
 WriteableBuffer = bytearray
 `;
